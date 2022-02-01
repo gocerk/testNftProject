@@ -1,15 +1,28 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <h1>Hello World !</h1>
+    <button @click="mint(1)">Mint</button>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { initialize, mint, getTokensOfAccount, getTotalSupply, balanceOf } from './Web3Client2';
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  
+  async mounted() {
+    await initialize();
+    await getTokensOfAccount();
+    await getTotalSupply();
+    await balanceOf();
+  },
+
+
+  methods: {
+    mint,
+    getTokensOfAccount,
+    getTotalSupply
   }
 }
 </script>
