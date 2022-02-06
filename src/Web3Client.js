@@ -1,89 +1,62 @@
-const Web3 = require('web3');
-const Web3EthContract = require('web3-eth-contract');
-const convert = require('amrhextotext')
-
-const web3 = new Web3(window.ethereum);
-Web3EthContract.setProvider(window.ethereum);
-
+const { ethers } = require('ethers');
 const contractBuild = require('./truffle/build/contracts/FPNFT.json');
-
 const contractAddress = '0xF72770ad1B99603D772c2Ead5c12CB4514a8772D';
+const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-let selectedAccount;
 let FPNFTcontract;
-
-let provider = window.ethereum;
+let selectedAccount;
 
 const initialize = async () => {
-    if (typeof provider !== 'undefined') {
-        const accounts = await provider.request({method: 'eth_requestAccounts'});
+    if(typeof provider !== 'undefined') {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         selectedAccount = accounts[0];
-        FPNFTcontract = new Web3EthContract(contractBuild.abi, contractAddress);
+
+        const signer = provider.getSigner();
+        FPNFTcontract = new ethers.Contract(contractAddress, contractBuild.abi, signer);
+        FPNFTcontract.connect(signer);
+
+        console.log(selectedAccount);
     } else {
         console.log('Metamask is not installed!');
     }
-
-    console.log(selectedAccount);
-}
-
-const onActions = () => {
-    window.ethereum.on('accountsChanged', function (accounts) {
-        selectedAccount = accounts[0];
-    });    
-
-    window.ethereum.on('networkChanges', function() {
-       console.log('Network changed!, please reload the page');
-    });
-}
-
-const getPayload = (from, to, nonce, gas, gasPrice, data) => {
-    return { 
-        from: from,
-        to: to,
-        nonce: nonce.toString(),
-        gas: '0x76c0',
-        gasPrice: '0x9184e72a000',
-        data: data,
-        value: `0x${convert.textToHex(data)}`
-    }
-}
-
-const getMintPrice = async () => {
-    const mintPrice = await FPNFTcontract.methods.MINT_PRICE().call({from: selectedAccount});
-    
-    return mintPrice;
 }
 
 
-const mint = async () => {
+const mint = async (mintAmount) => {
     try {
-        const nonce = await web3.eth.getTransactionCount(selectedAccount, 'latest');
-        const data = await FPNFTcontract.methods.publicSaleMint(1).encodeABI();
-        const mintPrice = await getMintPrice();        
-
-        const payload = getPayload(selectedAccount, contractAddress, nonce, 30400, 10000000000000, data, mintPrice);
-        console.log(payload);
-        const signedTx = await provider.request({method: 'eth_sendTransaction', params: [payload]});
-        
-        console.log(signedTx);
-
-        const transactionReceipt = await web3.eth.sendSignedTransaction(`0x${signedTx.toString(16)}`);
-        console.log(transactionReceipt);
+        const totalCost = mintAmount * 0.005;
+        console.log(totalCost);
+        await FPNFTcontract.functions.publicSaleMint(mintAmount, {from: selectedAccount, value: ethers.utils.parseEther(`${totalCost}`)}); 
     } catch(e) {
-        console.log(e);
+        return e;
     }
+  
 }
 
 const getTokensOfAccount = async () => {
-    const tokens = await FPNFTcontract.methods.tokensOfOwner(selectedAccount, 1, 50).call({from: selectedAccount});
+    let tokens = [];
+
+    const nfts = await FPNFTcontract.functions.tokensOfOwner(selectedAccount, 1, 50);
+
+    for(let x = 0; x<nfts[0].length; x++) {
+        const nft = ethers.utils.formatUnits(nfts[0][x]._hex.toString(), 0)
+        tokens.push(nft);
+    }
+
     console.log(tokens);
     return tokens;
 }
 
-const getTotalSupply = async () => {
-    const totalSupply = await FPNFTcontract.methods.currentSupply().call({from: selectedAccount});
-    
-    return totalSupply;
+const balanceOf = async () => {
+    const balance = await FPNFTcontract.functions.balanceOf(selectedAccount);
+    return ethers.utils.formatUnits(balance[0]._hex.toString(), 0);
 }
 
-module.exports = { initialize, mint, getTokensOfAccount, getTotalSupply, onActions};
+const getTotalSupply = async () => {
+    const totalSupply = await FPNFTcontract.functions.currentSupply();
+    console.log(ethers.utils.formatUnits(totalSupply[0]._hex.toString(), 0))
+    return ethers.utils.formatUnits(totalSupply[0]._hex.toString(), 0);
+}
+
+
+module.exports = { initialize, mint, getTokensOfAccount, getTotalSupply, balanceOf}
