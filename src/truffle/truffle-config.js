@@ -19,7 +19,7 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-require('dotenv').config('./env');
+require('dotenv').config('../.env');
 // const fs = require('fs');
 const mnemonic = process.env.MNEMONIC;
 const ropstenENDPOINT = process.env.ROPSTEN;
