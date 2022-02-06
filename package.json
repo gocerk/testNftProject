@@ -9,13 +9,19 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2",
+    "@pinata/sdk": "^1.1.23",
     "@truffle/hdwallet-provider": "^2.0.1",
     "amrhextotext": "^1.1.1",
+    "axios": "^0.25.0",
     "core-js": "^3.6.5",
     "dotenv": "^14.3.2",
     "ethers": "^5.5.4",
     "fs": "^0.0.1-security",
+    "ipfs-car": "^0.6.1",
+    "nft.storage": "^5.2.3",
+    "node-blob": "^0.0.2",
     "vue": "^3.0.0",
+    "wave-ui": "^2.30.0",
     "web3": "^1.7.0",
     "web3-eth-contract": "^1.7.0"
   },
@@ -26,7 +32,8 @@
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^7.0.0"
+    "eslint-plugin-vue": "^7.0.0",
+    "vue-cli-plugin-vuetify": "~2.4.5"
   },
   "eslintConfig": {
     "root": true,
@@ -40,7 +47,9 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars": "off"
+    }
   },
   "browserslist": [
     "> 1%",
